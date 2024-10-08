@@ -1,0 +1,90 @@
+name: Release executables
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract Version from Tag
+        id: extract_version_linux   # This creates a step ID to reference later
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}  # Extract version after "v"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT   # Set output variable
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Build for Linux
+        run: go build -o montinger-sentinels-${{ steps.extract_version_linux.outputs.version }}-linux
+
+      - name: Upload Release Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: montinger-sentinels-${{ steps.extract_version_linux.outputs.version }}-linux
+          path: montinger-sentinels-${{ steps.extract_version_linux.outputs.version }}-linux
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract Version from Tag
+        id: extract_version_windows
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}  # Extract version after "v"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT   # Set output variable
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Build for Windows
+        run: go build -o montinger-sentinels-${{ steps.extract_version_windows.outputs.version }}-windows.exe
+
+      - name: Upload Release Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: montinger-sentinels-${{ steps.extract_version_windows.outputs.version }}-windows
+          path: montinger-sentinels-${{ steps.extract_version_windows.outputs.version }}-windows.exe
+
+  release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Extract Version from Tag
+        id: extract_version_release
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}  # Extract version after "v"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT   # Set output variable
+
+      - name: Download Linux Executable
+        uses: actions/download-artifact@v4
+        with:
+          name: montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-linux
+
+      - name: Download Windows Executable
+        uses: actions/download-artifact@v4
+        with:
+          name: montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-windows
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-linux
+            montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-windows.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
