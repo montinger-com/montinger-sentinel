@@ -56,12 +56,36 @@ if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
 
   user=$(whoami)
   work_dir=$(pwd)
-  file_name=$(find . -maxdepth 1 -name "montinger-sentinels-*linux" -print -quit)
+  file_name=$(find . -maxdepth 1 -name "montinger-sentinel-*linux" -print -quit)
 
-  sed "s|<USER>|$user|g" "s|<WORK_DIR>|$work_dir|g" "s|<EXEC_START>|$file_name|g" montinger-sentinel.service.backup > montinger-sentinel.service
+  if [ -z "$file_name" ]; then
+    echo "Error setting up the Montinger Sentinel as a service."
+    exit 1
+  fi
+
+  mv $file_name montinger-sentinel
+
+  sed "s|<USER>|$user|g; s|<WORK_DIR>|$work_dir|g; s|<EXEC_START>|$work_dir|g" montinger-sentinel.service.backup > montinger-sentinel.service
+
+  if [ $? -ne 0 ]; then
+    echo "Error setting up the Montinger Sentinel as a service."
+    exit 1
+  fi
 
   sudo cp montinger-sentinel.service /etc/systemd/system/
+
+  if [ $? -ne 0 ]; then
+    echo "Error setting up the Montinger Sentinel as a service."
+    exit 1
+  fi
+
   sudo systemctl enable montinger-sentinel
+
+  if [ $? -ne 0 ]; then
+    echo "Error setting up the Montinger Sentinel as a service."
+    exit 1
+  fi
+
   sudo systemctl start montinger-sentinel
   
   if [ $? -ne 0 ]; then

@@ -23,13 +23,13 @@ jobs:
           go-version: 'stable'
 
       - name: Build for Linux
-        run: go build -o montinger-sentinels-${{ steps.extract_version_linux.outputs.version }}-linux
+        run: go build -o montinger-sentinel-${{ steps.extract_version_linux.outputs.version }}-linux
 
       - name: Upload Release Asset
         uses: actions/upload-artifact@v4
         with:
-          name: montinger-sentinels-${{ steps.extract_version_linux.outputs.version }}-linux
-          path: montinger-sentinels-${{ steps.extract_version_linux.outputs.version }}-linux
+          name: montinger-sentinel-${{ steps.extract_version_linux.outputs.version }}-linux
+          path: montinger-sentinel-${{ steps.extract_version_linux.outputs.version }}-linux
       
       - name: Upload Setup Script
         uses: actions/upload-artifact@v4
@@ -65,13 +65,13 @@ jobs:
           go-version: 'stable'
 
       - name: Build for Windows
-        run: go build -o montinger-sentinels-${{ steps.extract_version_windows.outputs.version }}-windows.exe
+        run: go build -o montinger-sentinel-${{ steps.extract_version_windows.outputs.version }}-windows.exe
 
       - name: Upload Release Asset
         uses: actions/upload-artifact@v4
         with:
-          name: montinger-sentinels-${{ steps.extract_version_windows.outputs.version }}-windows
-          path: montinger-sentinels-${{ steps.extract_version_windows.outputs.version }}-windows.exe
+          name: montinger-sentinel-${{ steps.extract_version_windows.outputs.version }}-windows
+          path: montinger-sentinel-${{ steps.extract_version_windows.outputs.version }}-windows.exe
 
   release:
     needs: [build-linux, build-windows]
@@ -90,7 +90,7 @@ jobs:
       - name: Download Linux Executable
         uses: actions/download-artifact@v4
         with:
-          name: montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-linux
+          name: montinger-sentinel-${{ steps.extract_version_release.outputs.version }}-linux
 
       - name: Download Linux Setup Script
         uses: actions/download-artifact@v4
@@ -103,18 +103,18 @@ jobs:
           name: montinger-sentinel.service.backup
 
       - name: Zip Linux Executable
-        run: tar -czf montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-linux.tar.gz montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-linux setup.sh montinger-sentinel.service.backup
+        run: tar -czf montinger-sentinel-${{ steps.extract_version_release.outputs.version }}-linux.tar.gz montinger-sentinel-${{ steps.extract_version_release.outputs.version }}-linux setup.sh montinger-sentinel.service.backup
 
       - name: Download Windows Executable
         uses: actions/download-artifact@v4
         with:
-          name: montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-windows
+          name: montinger-sentinel-${{ steps.extract_version_release.outputs.version }}-windows
       
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-linux.tar.gz
-            montinger-sentinels-${{ steps.extract_version_release.outputs.version }}-windows.exe
+            montinger-sentinel-${{ steps.extract_version_release.outputs.version }}-linux.tar.gz
+            montinger-sentinel-${{ steps.extract_version_release.outputs.version }}-windows.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
