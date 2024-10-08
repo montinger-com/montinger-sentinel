@@ -33,6 +33,10 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+
+    outputs:
+      version: ${{ steps.extract.outputs.version }} # Define output for the job
+
     steps:
       - uses: actions/checkout@v4
 
