@@ -35,7 +35,7 @@ jobs:
     runs-on: windows-latest
 
     outputs:
-      version: ${{ steps.extract.outputs.version }} # Define output for the job
+      version: ${{ steps.extract_version_windows.outputs.version }} # Define output for the job
 
     steps:
       - uses: actions/checkout@v4
