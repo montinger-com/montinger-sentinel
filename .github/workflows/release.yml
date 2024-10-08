@@ -39,8 +39,8 @@ jobs:
       - name: Extract Version from Tag
         id: extract_version_windows
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}  # Extract version after "v"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT   # Set output variable
+          $VERSION = $GITHUB_REF -replace "refs/tags/v", "" # Extract version after "v"
+          Write-Host "::set-output name=version::$VERSION" # Set output variable
 
       - name: Set up Go
         uses: actions/setup-go@v5
