@@ -64,6 +64,7 @@ if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
   fi
 
   mv $file_name montinger-sentinel
+  chmod +x montinger-sentinel
 
   sed "s|<USER>|$user|g; s|<WORK_DIR>|$work_dir|g; s|<EXEC_START>|$work_dir|g" montinger-sentinel.service.backup > montinger-sentinel.service
 
