@@ -37,6 +37,7 @@ fi
 
 echo "Updating files..."
 mv -f montinger-sentinel-$version-linux montinger-sentinel
+chmod +x montinger-sentinel
 
 if [ $? -ne 0 ]; then
   echo "Error updating files"
