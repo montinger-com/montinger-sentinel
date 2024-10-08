@@ -1,0 +1,14 @@
+[Unit]
+Description=Montinger Sentinel
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=<USER>
+WorkingDirectory=<WORK_DIR>
+ExecStart=<EXEC_START>
+
+[Install]
+WantedBy=multi-user.target
