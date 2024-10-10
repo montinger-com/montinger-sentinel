@@ -11,24 +11,44 @@ import (
 	"github.com/montinger-com/montinger-sentinel/models"
 	"github.com/rashintha/logger"
 	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
 func main() {
 	cpuChannel := make(chan float64)
-	memChannel := make(chan float64)
+	memChannel := make(chan *mem.VirtualMemoryStat)
+	osChannel := make(chan *host.InfoStat)
 
 	for {
 		go getCPU(cpuChannel)
 		go getMemory(memChannel)
+		go getOS(osChannel)
 
 		cpuUsage := <-cpuChannel
-		ramUsage := <-memChannel
+		mem := <-memChannel
+		os := <-osChannel
 
 		monitor := models.Monitor{
 			LastData: models.LastData{
-				CPUUsage:    cpuUsage,
-				MemoryUsage: ramUsage,
+				CPU: &models.CPU{
+					UsedPercent: cpuUsage,
+				},
+				Memory: &models.Memory{
+					Total:       mem.Total,
+					Available:   mem.Available,
+					Used:        mem.Used,
+					UsedPercent: mem.UsedPercent,
+				},
+				OS: &models.OS{
+					Type:            os.OS,
+					Platform:        os.Platform,
+					PlatformFamily:  os.PlatformFamily,
+					PlatformVersion: os.PlatformVersion,
+					KernelVersion:   os.KernelVersion,
+					KernelArch:      os.KernelArch,
+				},
+				Uptime: os.Uptime,
 			},
 		}
 
@@ -59,8 +79,8 @@ func main() {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != 200 {
-			logger.Defaultf("response Status: %v", resp.Status)
-			logger.Defaultf("response Headers: %v", resp.Header)
+			logger.Errorf("response Status: %v", resp.Status)
+			logger.Infof("response Headers: %v", resp.Header)
 		}
 
 		time.Sleep(15 * time.Second)
@@ -75,10 +95,18 @@ func getCPU(cpuChannel chan float64) {
 	cpuChannel <- percentages[0]
 }
 
-func getMemory(memChannel chan float64) {
+func getMemory(memChannel chan *mem.VirtualMemoryStat) {
 	v, err := mem.VirtualMemory()
 	if err != nil {
-		logger.Errorf("Error in getting memory percentage: %v", err.Error())
+		logger.Errorf("Error in getting memory details: %v", err.Error())
 	}
-	memChannel <- v.UsedPercent
+	memChannel <- v
+}
+
+func getOS(osChannel chan *host.InfoStat) {
+	os, err := host.Info()
+	if err != nil {
+		logger.Errorf("Error in getting os details: %v", err.Error())
+	}
+	osChannel <- os
 }
