@@ -20,6 +20,9 @@ func main() {
 	memChannel := make(chan *mem.VirtualMemoryStat)
 	osChannel := make(chan *host.InfoStat)
 
+	client := &http.Client{}
+	defer client.CloseIdleConnections()
+
 	for {
 		go getCPU(cpuChannel)
 		go getMemory(memChannel)
@@ -64,13 +67,13 @@ func main() {
 			logger.Errorf("Error in creating request: %v", err.Error())
 			continue
 		}
+		defer req.Body.Close()
 
 		// Set headers
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-API-KEY", config.SECRET)
 
 		// Send the request
-		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			logger.Errorf("Error in sending request: %v", err.Error())
